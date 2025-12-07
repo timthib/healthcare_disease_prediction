@@ -1,0 +1,304 @@
+import pandas as pd
+import requests
+import wbgapi as wb
+import osmnx as ox
+from time import sleep
+import warnings
+warnings.filterwarnings('ignore')
+
+countries = {
+    # low income
+    'AFG': 'Afghanistan',
+    'RWA': 'Rwanda',
+    'UGA': 'Uganda',
+    'MDG': 'Madagascar',
+    
+    # low middle income
+    'KEN': 'Kenya',
+    'BGD': 'Bangladesh',
+    'IND': 'India',
+    'PHL': 'Philippines',
+    'EGY': 'Egypt',
+    'PAK': 'Pakistan',
+    'NGA': 'Nigeria',
+    'GHA': 'Ghana',
+    
+    # high middle income
+    'BRA': 'Brazil',
+    'ZAF': 'South Africa',
+    'THA': 'Thailand',
+    'CHN': 'China',
+    'MEX': 'Mexico',
+    'TUR': 'Turkey',
+    'COL': 'Colombia',
+    'IDN': 'Indonesia',
+    
+    # high income
+    'JPN': 'Japan',
+    'KOR': 'South Korea',
+    'SGP': 'Singapore',
+    'CHL': 'Chile',
+    'POL': 'Poland',
+}
+
+# Convert to lists
+country_codes = list(countries.keys())
+country_names = countries
+
+print(f"Total countries: {len(country_codes)}")
+print(f"Country codes: {country_codes}")
+
+
+class HealthcareDataCollector:
+    def __init__(self, countries=None, country_names_dict=None):
+        """
+        Initialize with ISO3 country codes and their full names
+        """
+        if countries is None:
+            self.countries = country_codes
+            self.country_names_dict = country_names
+        else:
+            self.countries = countries
+            self.country_names_dict = country_names_dict if country_names_dict else {}
+        
+        self.who_data = {}
+        self.wb_data = {}
+        self.osm_data = {}
+        
+        print(f"\n Collector ok for {len(self.countries)} countries")
+
+    def collect_who_data(self):
+        """Collect WHO data"""
+
+        
+        indicators = {
+            'hospital_beds': 'WHS4_100',
+            'doctors': 'HWF_0001',
+            'nurses': 'WHS4_544',
+            'dtp3_vaccination': 'MDG_0000000007',
+            'tb_incidence': 'WHS6_102',
+            'infant_mortality': 'MDG_0000000001',
+            'maternal_mortality': 'MDG_0000000003',
+        }
+
+        for name, code in indicators.items():
+            try:
+                url = f"https://ghoapi.azureedge.net/api/{code}"
+                response = requests.get(url, timeout=30)
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    if 'value' in data:
+                        df = pd.DataFrame(data['value'])
+                        
+                        # Filter for our countries
+                        df = df[df['SpatialDim'].isin(self.countries)]
+                        
+                        # Filter for recent years (>=2010)
+                        if 'TimeDim' in df.columns:
+                            df['TimeDim'] = pd.to_numeric(df['TimeDim'], errors='coerce')
+                            df = df[df['TimeDim'] >= 2010]
+                        
+                        self.who_data[name] = df
+                        print(f"{name}: {len(df)} lines ({df['SpatialDim'].nunique()} countries)")
+                    else:
+                        print(f"ERROR : {name}: No 'value' key in response")
+                else:
+                    print(f"ERROR : {name}: HTTP {response.status_code}")
+                
+                sleep(1)  # Be respectful to API
+                
+            except Exception as e:
+                print(f"ERROR : {name}: {e}")
+
+        print(f"\nWHO data collection complete: {len(self.who_data)} indicators")
+        return self.who_data
+
+    def collect_wb_data(self):
+        """Collect World Bank data"""
+        
+        indicators = {
+            'health_exp_gdp': 'SH.XPD.CHEX.GD.ZS',
+            'health_exp_capita': 'SH.XPD.CHEX.PC.CD',
+            'uhc_coverage': 'SH.UHC.SRVS.CV.XD',
+            'population_total': 'SP.POP.TOTL',
+            'population_density': 'EN.POP.DNST',
+            'urban_population': 'SP.URB.TOTL.IN.ZS',
+            'gdp_per_capita': 'NY.GDP.PCAP.CD',
+            'poverty_headcount': 'SI.POV.DDAY',
+            'gini_index': 'SI.POV.GINI',
+        }
+
+        for name, code in indicators.items():
+            try:
+                df = wb.data.DataFrame(
+                    code, 
+                    economy=self.countries,
+                    time=range(2010, 2024),
+                    labels=True,
+                    skipBlanks=True,
+                    columns='series'
+                )
+                
+                self.wb_data[name] = df
+                print(f"{name}: {df.shape[0]} countries - {df.shape[1]} years")
+                
+            except Exception as e:
+                print(f"ERROR : {name}: {e}")
+
+        print(f"\nWorld Bank data collection complete: {len(self.wb_data)} indicators")
+        return self.wb_data
+
+    def collect_osm_data(self, country_names=None, batch_size=5):
+        """
+        Collect OSM data in batches to avoid overwhelming the API
+
+        """
+
+        if country_names is None:
+            country_names = self.country_names_dict
+        
+        facility_types = ['hospital', 'clinic', 'pharmacy']
+        countries_processed = 0
+        
+        for iso3, country_name in country_names.items():
+            if iso3 not in self.countries:
+                continue
+                
+            print(f"\n[{countries_processed + 1}/{len(self.countries)}] Processing {country_name} ({iso3})...")
+            self.osm_data[iso3] = {}
+            
+            for facility_type in facility_types:
+                try:
+                    tags = {'amenity': facility_type}
+                    facilities = ox.features_from_place(country_name, tags)
+
+                    self.osm_data[iso3][facility_type] = facilities
+                    print(f"  {facility_type}: {len(facilities)} facilities")
+                    sleep(2)  # Pause between facility types
+                    
+                except Exception as e:
+                    error_msg = str(e)
+                    if 'Found no' in error_msg or 'Nominatim' in error_msg:
+                        print(f"  ERROR : {facility_type}: No data found or location error")
+                    else:
+                        print(f"  ERROR : {facility_type}: {error_msg[:100]}")
+                    self.osm_data[iso3][facility_type] = None
+                    sleep(1)
+            
+            countries_processed += 1
+            
+            # Longer pause every batch_size countries
+            if countries_processed % batch_size == 0 and countries_processed < len(self.countries):
+                print("wait 10s")
+                sleep(10)
+
+        # Summary
+        successful_countries = sum(1 for iso3 in self.osm_data 
+                                  if any(v is not None for v in self.osm_data[iso3].values()))
+        print(f"\n✓ OSM data collection complete: {successful_countries}/{len(self.countries)} countries with data")
+        
+        return self.osm_data
+
+    def save_all_data(self, output_dir='healthcare_data'):
+        """Save all collected data"""
+        import os
+    
+        
+        os.makedirs(output_dir, exist_ok=True)
+
+        # Save WHO data
+        who_dir = os.path.join(output_dir, 'who')
+        os.makedirs(who_dir, exist_ok=True)
+        for name, df in self.who_data.items():
+            filepath = os.path.join(who_dir, f"{name}.csv")
+            df.to_csv(filepath, index=False)
+            print(f"Saved: who/{name}.csv ({len(df)} rows)")
+
+        # Save WB data
+        wb_dir = os.path.join(output_dir, 'worldbank')
+        os.makedirs(wb_dir, exist_ok=True)
+        for name, df in self.wb_data.items():
+            filepath = os.path.join(wb_dir, f"{name}.csv")
+            df.to_csv(filepath)
+            print(f"Saved: worldbank/{name}.csv ({df.shape[0]} lines - {df.shape[1]} years)")
+
+        # Save OSM data
+        osm_dir = os.path.join(output_dir, 'osm')
+        os.makedirs(osm_dir, exist_ok=True)
+        osm_files_saved = 0
+        for country, facilities in self.osm_data.items():
+            for facility_type, gdf in facilities.items():
+                if gdf is not None and len(gdf) > 0:
+                    filepath = os.path.join(osm_dir, f"{country}_{facility_type}.geojson")
+                    try:
+                        gdf.to_file(filepath, driver='GeoJSON')
+                        print(f"Saved: osm/{country}_{facility_type}.geojson ({len(gdf)} features)")
+                        osm_files_saved += 1
+                    except Exception as e:
+                        print(f"ERROR : Failed to save osm/{country}_{facility_type}.geojson: {e}")
+
+
+        print(f"WHO indicators: {len(self.who_data)} files")
+        print(f"World Bank indicators: {len(self.wb_data)} files")
+        print(f"OSM geospatial data: {osm_files_saved} files")
+    
+
+    def get_summary_statistics(self):
+        """Print summary statistics of collected data"""
+        
+        print(f"WHO Data:")
+        for name, df in self.who_data.items():
+            countries_with_data = df['SpatialDim'].nunique()
+            print(f"  {name}: {countries_with_data}/{len(self.countries)} countries")
+        
+        print(f"World Bank Data:")
+        for name, df in self.wb_data.items():
+            # Count non null values
+            non_null_count = df.notna().sum().sum()
+            total_cells = df.shape[0] * df.shape[1]
+            coverage = (non_null_count / total_cells * 100) if total_cells > 0 else 0
+            print(f"  {name}: {coverage:.1f}% coverage")
+        
+        print(f"OpenStreetMap Data:")
+        total_facilities = 0
+        for iso3, facilities in self.osm_data.items():
+            for facility_type, gdf in facilities.items():
+                if gdf is not None:
+                    total_facilities += len(gdf)
+        print(f"  Total facilities mapped: {total_facilities:,}")
+        
+        countries_with_osm = sum(1 for iso3 in self.osm_data 
+                                if any(v is not None for v in self.osm_data[iso3].values()))
+        print(f"  Countries with OSM data: {countries_with_osm}/{len(self.countries)}")
+
+
+if __name__ == "__main__":
+    
+    collector = HealthcareDataCollector(
+        countries=country_codes,
+        country_names_dict=country_names
+    )
+    
+    # Collect WHO data
+    print("Collect WHO data")
+    who_data = collector.collect_who_data()
+    
+    # Collect World Bank data
+    print("Collect World Bank data")
+    wb_data = collector.collect_wb_data()
+    
+    # Collect OSM data
+    print("Collect OpenStreetMap data")
+    
+    # Collect OSM data, commented because too long and not necessary for the project
+    #osm_data = collector.collect_osm_data(country_names)
+    
+    # Get summary statistics
+    collector.get_summary_statistics()
+    
+    # Save all data
+    collector.save_all_data('healthcare_data_25countries')
+    
+    print("Done")
+ 
