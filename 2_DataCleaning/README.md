@@ -1,16 +1,40 @@
-# Data Science Exploration Curriculum
 
-This folder contains the step-by-step exercises to master Data Exploration.
+# Plan 
 
-## 1. Visualization Basics (`01_visualize_trends.py`)
-*(Already present)* - Simple line plots to see trends over time.
+1. Find problematic to adress
+2. Gather data 
+3. Exploration 
+4. Preprocessing 
+5. Analysis 
+6. Modeling 
+7. Report 
 
-## 2. Data Engineering (`02_create_master_dataset.py`)
-**CURRENT TASK**: Real-world data is scattered. Your job is to standardise and merge disparate data sources (WHO & World Bank) into a single "Source of Truth".
 
-## 3. Missing Value Analysis (`03_missing_values.py`)
-*Coming soon* - Once we have the Master Dataset, we'll see it's full of holes (NaNs). We will visualize these gaps to decide if we drop rows, fill them (impute), or cry.
+1. Problematic 
+Map healthcare infrastructure gaps and predict disease outbreak vulnerability in underserved regions.
 
-## 4. Correlation & Multivariate Analysis (`04_correlations.py`)
-*Coming soon* - We will look for the "Why". Does GDP correlate with Mortality? Does Vaccination rate correlate with Life Expectancy?
+2. Gather data 
+- [WHO Global Health Observatory API](https://www.who.int/data/gho/info/gho-odata-api) - Disease prevalence, vaccination rates, health infrastructure
+- [World Bank Health API](https://data.worldbank.org/topic/health) - Healthcare expenditure, access metrics
+- [OpenStreetMap API](https://wiki.openstreetmap.org/wiki/API) - Hospital and clinic locations
+
+
+3. Data Cleaning 
+- Clean data 
+- Handle missing values 
+- Set right types 
+- Set right format 
+
+4. Exploration 
+- Get all columns 
+- Filter relevant columns 
+- Filter exploitable columns 
+- See trends 
+- Descriptive statistics 
+
+5. Analysis 
+- Bivariate and multivariate statistics 
+- See correlations 
+- See joint evolutions
+
 
