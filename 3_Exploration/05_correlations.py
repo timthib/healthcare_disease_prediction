@@ -19,7 +19,7 @@ def analyze_correlations(file_path):
     plt.savefig('Fig4_correlation_matrix.png')
     
     
-   
+   #COMMENTED BECAUSE TOO LONG TO RUN, ONLY USEFUL FOR VISUALIZATION, SEE PAIRPLOT_KEY_METRICS
    #sns.pairplot(df, kind='reg') #reg adds a regression line
    #plt.savefig('Fig_pairplot_all_columns.png')
     """
