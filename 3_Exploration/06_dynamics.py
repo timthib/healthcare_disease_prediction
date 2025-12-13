@@ -85,8 +85,71 @@ def advanced_exploration(file_path):
     
     print("charts done")
 
+# Fichier dynamics.py
+
+# ... (votre code précédent pour advanced_exploration et target_variable_analysis)
+
+def infant_mortality_analysis(file_path):
+    df = pd.read_csv(file_path)
+    latest_year = df['Year'].max()
+    df_latest = df[df['Year'] == latest_year].copy()
+    
+    # ----------------------------------------------------
+    # Plot 1: Vaccination vs. Infant Mortality (Prévention)
+    # ----------------------------------------------------
+    plt.figure(figsize=(10, 6))
+    
+    # Scatter plot with regression line (using the last year's data)
+    sns.regplot(data=df_latest, x='dtp3_vaccination_rate', y='infant_mortality_rate', 
+                scatter_kws={'alpha':0.8}, line_kws={'color':'red', 'linestyle':'--'})
+    
+    plt.title(f"Couverture Vaccinale DTP3 vs. Mortalité Infantile ({latest_year})")
+    plt.xlabel("Couverture Vaccinale DTP3 (%)")
+    plt.ylabel("Taux de Mortalité Infantile (pour 1000 naissances)")
+    plt.grid(True, axis='y', alpha=0.5)
+    plt.tight_layout()
+    plt.savefig('Fig9_vaccine_vs_infant_mortality.png')
+    
+    # ----------------------------------------------------
+    # Plot 2: Doctors vs. Infant Mortality (Infrastructure)
+    # ----------------------------------------------------
+    plt.figure(figsize=(12, 7))
+    
+    # Use log scale for Doctors and Mortality, and use GDP for color (hue)
+    sns.scatterplot(data=df_latest, x='doctors_per_10k', y='infant_mortality_rate', 
+                    hue='gdp_per_capita', size='gdp_per_capita', 
+                    palette='viridis', sizes=(50, 500), alpha=0.7)
+    
+    # Add labels for a few extreme countries to provide context
+    # Example to label the country with the highest and lowest infant mortality rate
+    worst_performer = df_latest.loc[df_latest['infant_mortality_rate'].idxmax()]
+    best_performer = df_latest.loc[df_latest['infant_mortality_rate'].idxmin()]
+    
+    plt.text(worst_performer['doctors_per_10k'], worst_performer['infant_mortality_rate'], 
+             worst_performer['Country'], fontsize=9, ha='right', fontweight='bold')
+    plt.text(best_performer['doctors_per_10k'], best_performer['infant_mortality_rate'], 
+             best_performer['Country'], fontsize=9, ha='left', fontweight='bold')
+    
+    plt.xscale('log') 
+    plt.yscale('log')
+    plt.title(f"Accès aux Soins (Médecins) vs. Mortalité Infantile, Colorié par PIB ({latest_year})")
+    plt.xlabel("Médecins pour 10k habitants (Échelle Log)")
+    plt.ylabel("Taux de Mortalité Infantile (Échelle Log)")
+    plt.legend(title='PIB par habitant')
+    plt.grid(True, which="both", ls="--")
+    plt.tight_layout()
+    plt.savefig('Fig10_doctors_vs_infant_mortality.png')
+    
+    print("Infant mortality analysis done (Fig9 and Fig10 generated).")
 
 
+# METTRE À JOUR LE BLOC __main__ pour exécuter toutes les analyses
+if __name__ == "__main__":
+    file_path = 'healthcare_data_25countries/MASTER_DATASET_CLEAN.csv'
+    advanced_exploration(file_path)
+    #target_variable_analysis(file_path)
+    infant_mortality_analysis(file_path) # NOUVELLE LIGNE AJOUTÉE
+"""
 if __name__ == "__main__":
     advanced_exploration('healthcare_data_25countries/MASTER_DATASET_CLEAN.csv')
-
+"""
