@@ -87,7 +87,6 @@ def advanced_exploration(file_path):
 
 # Fichier dynamics.py
 
-# ... (votre code précédent pour advanced_exploration et target_variable_analysis)
 
 def infant_mortality_analysis(file_path):
     df = pd.read_csv(file_path)
@@ -143,7 +142,6 @@ def infant_mortality_analysis(file_path):
     print("Infant mortality analysis done (Fig9 and Fig10 generated).")
 
 
-# METTRE À JOUR LE BLOC __main__ pour exécuter toutes les analyses
 if __name__ == "__main__":
     file_path = 'healthcare_data_25countries/MASTER_DATASET_CLEAN.csv'
     advanced_exploration(file_path)
