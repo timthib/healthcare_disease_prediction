@@ -31,6 +31,24 @@ def analyze_correlations(file_path):
     
     print("correlation and pairplot done")
 
+    # ----------------------------------------------------
+    # NEW: 3. Infrastructure Collinearity Check (for PCA)
+    # ----------------------------------------------------
+    """
+    Visual check for strong collinearity among infrastructure variables and GDP.
+    This plot confirms if these variables should be combined via PCA before
+    running a regression to avoid unstable coefficients.
+    """
+    infrastructure_cols = ['gdp_per_capita', 'doctors_per_10k', 'nurses_per_10k', 'hospital_beds_per_10k']
+    
+    # We use a pairplot to see the linear relationships clearly
+    plt.figure(figsize=(10, 10))
+    sns.pairplot(df[infrastructure_cols], kind='scatter', diag_kind='kde')
+    plt.suptitle("Check for Multicollinearity: Infrastructure and Wealth", y=1.02, fontsize=16)
+    plt.savefig('Fig8_infrastructure_collinearity_check.png')
+    
+    print("correlation, pairplot, and collinearity check done")
+
 if __name__ == "__main__":
     analyze_correlations('healthcare_data_25countries/MASTER_DATASET_CLEAN.csv')
 
