@@ -54,6 +54,9 @@ def run_linear_regression(df, features, target):
     print("\nImpact des Indices (Coefficients) :")
     print(coeff_df.sort_values(by='Coefficient'))
     
+    # Affichage de l'intercept
+    print("Intercept b0 :", model.intercept_)
+    
     # Visualisation des résultats
     plt.figure(figsize=(10, 6))
     sns.scatterplot(x=y_test, y=y_pred)
