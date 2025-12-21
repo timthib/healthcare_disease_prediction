@@ -36,5 +36,11 @@ Map healthcare infrastructure gaps and predict disease outbreak vulnerability in
 - Bivariate and multivariate statistics 
 - See correlations 
 - See joint evolutions
+- ACP because we have lots of variables that are quite correlated so we outline 3 (kaiser criteria) distinct characteristics. 
+- See pair plot of ACP to see the nature of link between components and our interest variable : infant mortality rate 
 
 
+6. Modelisation 
+- Linear regression of infant morality rate 
+- Model to predict infant mortality rate 
+- get gradient to get the best lever to decrease it (combination)
