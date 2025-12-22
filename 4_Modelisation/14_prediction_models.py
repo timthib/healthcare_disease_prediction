@@ -11,7 +11,7 @@ from xgboost import XGBRegressor
 
 def _load_lin_reg_module():
     """
-    Load the 13_lin_reg_bis module despite its numeric filename.
+    Load the 13_lin_reg_bis module (nom avec 13 (nombre) donc traitement particulier)
     """
     module_path = Path(__file__).resolve().parent / "13_lin_reg_bis.py"
     spec = importlib.util.spec_from_file_location("lin_reg_bis", module_path)
@@ -42,7 +42,7 @@ def build_features_with_fe(panel_df):
 
 def walk_forward_split(panel_df, train_end_year=2020, test_start_year=2021):
     """
-    Time-based split:
+    Split walk forward:
     - Train: years <= train_end_year
     - Test : years >= test_start_year
     """
@@ -57,7 +57,7 @@ def walk_forward_split(panel_df, train_end_year=2020, test_start_year=2021):
 
 def evaluate_models_walk_forward(panel_df):
     """
-    Compare two models on a walk-forward split:
+    Compare two models on a walk forward split:
     - Linear regression with lag + country fixed effects
     - XGBoost regressor with the same inputs
     Returns a dict with RMSE metrics and predictions, and saves comparison plots.
@@ -68,13 +68,13 @@ def evaluate_models_walk_forward(panel_df):
     X_train, X_test = X[train_mask], X[test_mask]
     y_train, y_test = y[train_mask], y[test_mask]
 
-    # -------- Model 1: Linear regression (lag + FE) --------
+    # Model 1: Linear regression (lag + FE) 
     lin_model = LinearRegression()
     lin_model.fit(X_train, y_train)
     y_pred_lin = lin_model.predict(X_test)
     rmse_lin = np.sqrt(mean_squared_error(y_test, y_pred_lin))
 
-    # -------- Model 2: XGBoost regressor --------
+    # Model 2: XGBoost regressor 
     xgb_model = XGBRegressor(
         objective='reg:squarederror',
         n_estimators=400,
@@ -93,7 +93,7 @@ def evaluate_models_walk_forward(panel_df):
     print(f"RMSE - Linear FE + Lag : {rmse_lin:.4f}")
     print(f"RMSE - XGBoost        : {rmse_xgb:.4f}")
 
-    # -------- Visualizations for explainability --------
+    # Visualizations 
     # 1) Predicted vs Actual for both models
     plt.figure(figsize=(12, 5))
     plt.subplot(1, 2, 1)
