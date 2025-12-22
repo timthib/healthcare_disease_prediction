@@ -6,20 +6,39 @@ import numpy as np
 def analyze_correlations(file_path):
     # Load Clean Data
     df = pd.read_csv(file_path)
-    numeric_df = df.drop(columns=['Country', 'Year']) #we drop non numeric and year because correlation with year is trivial (trend across time)
-    corr_matrix = numeric_df.corr() 
-    plt.figure(figsize=(12, 10))
-    
-    # mask to only see the coefficient once, symetric matrix and diagonal elements = 1
-    mask = np.triu(np.ones_like(corr_matrix,dtype=bool))
-    sns.heatmap(corr_matrix, mask=mask, annot=True,fmt=".2f", cmap='coolwarm',center=0)
-    #annot = true to show numbers, format with 2 decimals, center=0 so that no correlation is neutral, cmap= coolwars so taht red =1, blue = -1
-    plt.title("Correlation Matrix: What drives Health?")
+    countries = df['Country'].unique()
+    n_countries = len(countries)
+    n_cols = 2
+    n_rows = int(np.ceil(n_countries / n_cols))
+    fig, axes = plt.subplots(n_rows, n_cols, figsize=(12 * n_cols, 10 * n_rows))
+    axes = axes.flatten() if n_countries > 1 else [axes]
+    for idx, country in enumerate(countries):
+        country_df = df[df['Country'] == country]
+        numeric_df = country_df.drop(columns=['Country', 'Year'])
+        corr_matrix = numeric_df.corr()
+        mask = np.triu(np.ones_like(corr_matrix, dtype=bool))
+        sns.heatmap(corr_matrix, mask=mask, annot=True, fmt=".2f", cmap='coolwarm', center=0, ax=axes[idx])
+        axes[idx].set_title(f"Correlation Matrix: {country}")
+    # Hide unused subplots
+    for j in range(idx + 1, len(axes)):
+        fig.delaxes(axes[j])
     plt.tight_layout()
-    plt.savefig('Fig4_correlation_matrix.png')
+    plt.savefig("Fig4_correlation_matrix_all_countries.png")
+    plt.close()
+    # numeric_df = df.drop(columns=['Country', 'Year']) #we drop non numeric and year because correlation with year is trivial (trend across time)
+    # corr_matrix = numeric_df.corr() 
+    # plt.figure(figsize=(12, 10))
+    
+    # # mask to only see the coefficient once, symetric matrix and diagonal elements = 1
+    # mask = np.triu(np.ones_like(corr_matrix,dtype=bool))
+    # sns.heatmap(corr_matrix, mask=mask, annot=True,fmt=".2f", cmap='coolwarm',center=0)
+    # #annot = true to show numbers, format with 2 decimals, center=0 so that no correlation is neutral, cmap= coolwars so taht red =1, blue = -1
+    # plt.title("Correlation Matrix: What drives Health?")
+    # plt.tight_layout()
+    # plt.savefig('Fig4_correlation_matrix.png')
     
     
-   
+   #COMMENTED BECAUSE TOO LONG TO RUN, ONLY USEFUL FOR VISUALIZATION, SEE PAIRPLOT_KEY_METRICS
    #sns.pairplot(df, kind='reg') #reg adds a regression line
    #plt.savefig('Fig_pairplot_all_columns.png')
     """

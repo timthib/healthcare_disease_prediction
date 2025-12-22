@@ -53,6 +53,9 @@ def run_linear_regression(df, features, target):
     coeff_df = pd.DataFrame(model.coef_, features, columns=['Coefficient'])
     print("\nImpact des Indices (Coefficients) :")
     print(coeff_df.sort_values(by='Coefficient'))
+
+    # Affichage de l'intercept
+    print("Intercept b0 :", model.intercept_)
     
     # Visualisation des résultats
     plt.figure(figsize=(10, 6))
