@@ -50,3 +50,12 @@ Prédiction de la mortalité infantile et modélisation de ses déterminants sel
 6. Modélisation 
 - Régression linéaire du taux de mortalité infantile 
 - Modèle prédictif du taux de mortalité infantile
+
+
+## Ordre d'exécution et de lecture des notebooks  
+
+1: Introduction
+2: 1-DataCollection.ipynb
+3: 2-DataCleaning.ipynb
+4: 3-DataExploration.ipynb
+5: 4-Modélisation
