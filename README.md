@@ -59,3 +59,4 @@ Prédiction de la mortalité infantile et modélisation de ses déterminants sel
 3: 2-DataCleaning.ipynb
 4: 3-DataExploration.ipynb
 5: 4-Modélisation
+6: Conclusion
