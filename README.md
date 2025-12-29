@@ -1,46 +1,62 @@
 
-# Plan 
+# Plan de travail 
 
-1. Find problematic to adress
-2. Gather data 
-3. Exploration 
-4. Preprocessing 
-5. Analysis 
-6. Modeling 
-7. Report 
-
-
-1. Problematic 
-Map healthcare infrastructure gaps and predict disease outbreak vulnerability in underserved regions.
-
-2. Gather data 
-- [WHO Global Health Observatory API](https://www.who.int/data/gho/info/gho-odata-api) - Disease prevalence, vaccination rates, health infrastructure
-- [World Bank Health API](https://data.worldbank.org/topic/health) - Healthcare expenditure, access metrics
-- [OpenStreetMap API](https://wiki.openstreetmap.org/wiki/API) - Hospital and clinic locations
+1. Trouver une problématique
+2. Regrouper les données
+3. Nettoyage et préparation des données
+4. Explorer les données  
+5. Statistiques descriptives 
+6. Modélisation 
+7. Rédaction du rapport 
 
 
-3. Data Cleaning 
-- Clean data 
-- Handle missing values 
-- Set right types 
-- Set right format 
+1. Problématique 
 
-4. Exploration 
-- Get all columns 
-- Filter relevant columns 
-- Filter exploitable columns 
-- See trends 
-- Descriptive statistics 
+La richesse d'un pays suffit-elle à garantir une faible mortalité infantile, ou l'organisation et l'intensité de l'offre de soins jouent-elles un rôle plus déterminant ?
 
-5. Analysis 
-- Bivariate and multivariate statistics 
-- See correlations 
-- See joint evolutions
-- ACP because we have lots of variables that are quite correlated so we outline 3 (kaiser criteria) distinct characteristics. 
-- See pair plot of ACP to see the nature of link between components and our interest variable : infant mortality rate 
+Prédiction de la mortalité infantile et modélisation de ses déterminants selon les pays
 
 
-6. Modelisation 
-- Linear regression of infant morality rate 
-- Model to predict infant mortality rate 
-- get gradient to get the best lever to decrease it (combination)
+2. Regrouper les données
+
+- API de l'OMS : Données sur la prévalence des maladies, les taux de vaccination et les infrastructures de santé.
+
+(https://www.who.int/data/gho/info/gho-odata-api)
+
+- API de la Banque Mondiale : Données sur les indicateurs socio-économiques
+(https://data.worldbank.org/topic/health) 
+
+3. Nettoyage et préparation des données
+
+- Nettoyage des données
+- Gestion des valeurs manquantes
+- Correction des types de variables
+- Mise en forme et harmonisation des jeux de données
+
+4. Exploration des données
+
+- Inventaire de l’ensemble des variables disponibles
+- Sélection des variables pertinentes
+- Identification des variables exploitables
+- Analyse des tendances temporelles et géographiques
+
+5. Statistiques descriptives 
+- Analyses bivariées et multivariées
+- Étude des corrélations entre variables
+- Analyse des évolutions conjointes
+- Analyse en composantes principales (ACP) : Étant donné le grand nombre de variables fortement corrélées, une ACP est réalisée afin d’identifier trois composantes principales distinctes, selon le critère de Kaiser.
+
+
+6. Modélisation 
+- Régression linéaire du taux de mortalité infantile 
+- Modèle prédictif du taux de mortalité infantile
+
+
+## Ordre d'exécution et de lecture des notebooks  
+
+1: Introduction
+2: 1-DataCollection.ipynb
+3: 2-DataCleaning.ipynb
+4: 3-DataExploration.ipynb
+5: 4-Modélisation
+6: Conclusion
